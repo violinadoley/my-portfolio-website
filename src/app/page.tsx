@@ -1,52 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import { motion, useScroll, useSpring, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useSpring, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { FaLinkedin, FaTwitter, FaGithub, FaInstagram, FaEnvelope, FaFileAlt } from 'react-icons/fa';
 import { SiGooglescholar } from 'react-icons/si';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const { scrollYProgress } = useScroll();
-  const [showCVButton, setShowCVButton] = useState(false);
-  const [cvHovered, setCvHovered] = useState(false);
   const [showThemeToggle, setShowThemeToggle] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
   const [profileImage, setProfileImage] = useState('/my-photo.jpeg');
-  const [mainProfileImage, setMainProfileImage] = useState('/my-photo.jpeg');
   const [theme, setTheme] = useState('light'); // 'light' or 'dark'
-  const [currentTime, setCurrentTime] = useState('');
-  const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
   const [greeting, setGreeting] = useState('नमस्ते');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarX = useMotionValue(-280);
   const sidebarXSpring = useSpring(0, {
     stiffness: 100,
     damping: 20,
     mass: 1
   });
-  const contentMargin = useTransform(sidebarXSpring, (x) => 280 + x);
 
   useEffect(() => {
     // Set initial time
-    const updateTime = () => {
-      const now = new Date();
-      const options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
-      setCurrentTime(now.toLocaleString('en-US', options));
-    };
+    // const updateTime = () => {
+    //   const now = new Date();
+    //   const options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+    //   setCurrentTime(now.toLocaleString('en-US', options));
+    // };
 
-    updateTime(); // Update immediately on mount
+    // updateTime(); // Update immediately on mount
 
     // Update time every minute
-    const timerId = setInterval(updateTime, 60000); // Update every 60 seconds
+    // const timerId = setInterval(updateTime, 60000); // Update every 60 seconds
 
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
@@ -115,7 +101,7 @@ export default function Home() {
 
     return () => {
       clearTimeout(loadingTimer);
-      clearInterval(timerId);
+      // clearInterval(timerId); // Remove timerId cleanup
       clearInterval(greetingInterval);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', checkMobile); // Clean up resize listener
@@ -125,7 +111,6 @@ export default function Home() {
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     setProfileImage(prevImage => prevImage === '/my-photo.jpeg' ? '/pp2.png' : '/my-photo.jpeg');
-    setMainProfileImage(prevImage => prevImage === '/my-photo.jpeg' ? '/pp2.png' : '/my-photo.jpeg');
   };
 
   const themeStyles = {
@@ -163,47 +148,6 @@ export default function Home() {
 
   const currentTheme = themeStyles[theme as keyof typeof themeStyles];
 
-  // Add text distortion effect
-  const textDistortion = {
-    normal: {
-      x: 0,
-      y: 0,
-      rotate: 0,
-      scale: 1,
-      opacity: 1,
-      transition: { duration: 0.15, ease: "easeOut" }
-    },
-    squeezed: (index: number, totalLength: number) => {
-      // Calculate distance from the start (closer to navbar = more distortion)
-      const distanceFromStart = index / totalLength;
-      // Create a random push effect with less falloff
-      const pushFactor = 0.3 + (0.7 * Math.pow(1 - distanceFromStart, 1.5));
-      
-      // Generate random values for each letter - using a seeded random for consistency
-      const seededRandom = (seed: number) => {
-        const x = Math.sin(seed) * 10000;
-        return x - Math.floor(x);
-      };
-      
-      const randomX = (seededRandom(index) - 0.5) * 2; // Random value between -1 and 1
-      const randomY = (seededRandom(index + 1) - 0.5) * 2;
-      const randomRotate = (seededRandom(index + 2) - 0.5) * 2;
-      
-      return {
-        x: (randomX * 100 * pushFactor) + (200 * pushFactor), // Random horizontal movement
-        y: randomY * 80 * pushFactor, // Random vertical movement
-        rotate: randomRotate * 60 * pushFactor, // Random rotation
-        scale: 1, // Keep original size
-        opacity: 0.3 + (0.7 * pushFactor),
-        transition: { 
-          duration: 0.2,
-          ease: [0.4, 0, 0.2, 1],
-          delay: index * 0.005
-        }
-      };
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ede6d6]">
@@ -237,20 +181,6 @@ export default function Home() {
   }
 
   // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0, y: 24 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.15, duration: 0.7, ease: 'easeOut' },
-    }),
-  };
-
-  const slideIn = {
-    hidden: { opacity: 0, x: -32 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: 'easeOut' } },
-  };
-
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -272,12 +202,6 @@ export default function Home() {
         ease: "easeOut"
       }
     }
-  };
-
-  // Floating animation
-  const floating = {
-    initial: { y: 0 },
-    animate: { y: [0, 5, 0], transition: { duration: 4, repeat: Infinity, ease: "easeInOut" } },
   };
 
   return (
@@ -394,7 +318,7 @@ export default function Home() {
               'Projects',
               'Publications',
               'Blogs'
-            ].map((item, index) => (
+            ].map((item) => (
               <motion.li
                 key={item}
                 variants={itemVariants}
@@ -610,7 +534,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.0, duration: 0.7 }}
               >
-                {"Violina Doley".split("").map((char, index, array) => (
+                {"Violina Doley".split("").map((char, index) => (
                   <motion.span
                     key={index}
                     className="inline-block"
@@ -752,9 +676,9 @@ export default function Home() {
               transition={{ delay: 1.4, duration: 0.7 }}
             >
               <h2 className="text-sm font-bold mb-3 relative pb-1">
-                {"About".split("").map((char, index) => (
+                {"About".split("").map((char) => (
                   <motion.span
-                    key={index}
+                    key={char}
                     className="inline-block"
                     whileHover={{
                       scale: 1.5,
@@ -792,9 +716,9 @@ export default function Home() {
               <motion.p 
                 className={`${currentTheme.text} text-sm leading-relaxed mb-6`}
               >
-                {"AI researcher and software engineer with expertise in machine learning, computer vision, and natural language processing. Proven track record in developing innovative solutions at leading technology companies. Currently focused on healthcare AI applications, working to create accessible and unbiased solutions through advanced machine learning techniques.".split("").map((char, index) => (
+                {"AI researcher and software engineer with expertise in machine learning, computer vision, and natural language processing. Proven track record in developing innovative solutions at leading technology companies. Currently focused on healthcare AI applications, working to create accessible and unbiased solutions through advanced machine learning techniques.".split("").map((char) => (
                   <motion.span
-                    key={index}
+                    key={char}
                     className="inline-block"
                     whileHover={{
                       scale: 1.5,
@@ -821,9 +745,9 @@ export default function Home() {
               <motion.p 
                 className={`${currentTheme.text} text-sm leading-relaxed mb-6`}
               >
-                {"With a strong foundation in both theoretical and practical aspects of AI, I specialize in developing end-to-end solutions that bridge research and real-world applications. My work spans multiple domains, from predictive maintenance to intelligent recommendation systems, while maintaining a focus on ethical and responsible AI development. I actively contribute to the AI community through open-source projects and academic collaborations, including publications in IEEE conferences.".split("").map((char, index) => (
+                {"With a strong foundation in both theoretical and practical aspects of AI, I specialize in developing end-to-end solutions that bridge research and real-world applications. My work spans multiple domains, from predictive maintenance to intelligent recommendation systems, while maintaining a focus on ethical and responsible AI development. I actively contribute to the AI community through open-source projects and academic collaborations, including publications in IEEE conferences.".split("").map((char) => (
                   <motion.span
-                    key={index}
+                    key={char}
                     className="inline-block"
                     whileHover={{
                       scale: 1.5,
@@ -850,9 +774,9 @@ export default function Home() {
               <motion.p 
                 className={`${currentTheme.text} text-sm leading-relaxed mb-6`}
               >
-                {"My approach combines cutting-edge research with practical implementation, ensuring that innovative AI solutions are not only technically sound but also scalable and impactful in real-world scenarios.".split("").map((char, index) => (
+                {"My approach combines cutting-edge research with practical implementation, ensuring that innovative AI solutions are not only technically sound but also scalable and impactful in real-world scenarios.".split("").map((char) => (
                   <motion.span
-                    key={index}
+                    key={char}
                     className="inline-block"
                     whileHover={{
                       scale: 1.5,
@@ -895,9 +819,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Experience".split("").map((char, index) => (
+                  {"Experience".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -977,9 +901,9 @@ export default function Home() {
                         <p className={`${currentTheme.textMuted} text-sm mt-2 md:mt-0`}>{job.period}</p>
                       </div>
                       <p className={`${currentTheme.text} text-sm leading-relaxed`}>
-                        {job.description.split("").map((char, index) => (
+                        {job.description.split("").map((char) => (
                           <motion.span
-                            key={index}
+                            key={char}
                             className="inline-block"
                             whileHover={{
                               scale: 1.5,
@@ -1026,9 +950,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Skills".split("").map((char, index) => (
+                  {"Skills".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -1130,9 +1054,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Education".split("").map((char, index) => (
+                  {"Education".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -1199,9 +1123,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Projects".split("").map((char, index) => (
+                  {"Projects".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -1474,9 +1398,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Publications".split("").map((char, index) => (
+                  {"Publications".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -1557,9 +1481,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {"Blogs".split("").map((char, index) => (
+                  {"Blogs".split("").map((char) => (
                     <motion.span
-                      key={index}
+                      key={char}
                       className="inline-block"
                       whileHover={{
                         scale: 1.5,
@@ -1603,9 +1527,9 @@ export default function Home() {
                   >
                     <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
                     <p className={`${currentTheme.textMuted} text-sm`}>
-                      {"A space for my learnings and thoughts. Stay tuned :)".split("").map((char, index) => (
+                      {"A space for my learnings and thoughts. Stay tuned :)".split("").map((char) => (
                         <motion.span
-                          key={index}
+                          key={char}
                           className="inline-block"
                           whileHover={{
                             scale: 1.5,
